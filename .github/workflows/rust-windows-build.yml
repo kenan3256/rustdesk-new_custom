@@ -3,26 +3,32 @@ name: Build RustDesk (Windows)
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code (with submodules)
+      - name: Checkout code with FULL submodules
         uses: actions/checkout@v4
         with:
-          submodules: recursive  # Submodulları da clone edir!
+          submodules: recursive
+          fetch-depth: 0  # TAM tarixçə yüklə
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Rust (stable + Windows target)
+      - name: Force-Update Submodules
+        run: |
+          git submodule deinit --all -f
+          git submodule update --init --recursive --force
+          dir libs\hbb_common  # İçində fayl olub-olmadığını yoxla
+
+      - name: Install Rust
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
           target: x86_64-pc-windows-msvc
 
-      - name: Install Windows Build Tools (Link.exe)
+      - name: Install Build Tools
         run: |
           choco install -y visualstudio2022-workload-vctools
           rustup default stable-x86_64-pc-windows-msvc
@@ -30,13 +36,8 @@ jobs:
       - name: Build Release
         run: cargo build --release --locked
 
-      - name: List Built Files (Debug)
-        run: dir /s target\release\*.exe
-
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: rustdesk-exe
           path: target\release\*.exe
-          if-no-files-found: error
-          retention-days: 3
