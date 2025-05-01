@@ -1,47 +1,42 @@
-
-name: Build RustDesk Windows EXE
+name: Build RustDesk (Windows)
 
 on:
   push:
-    branches:
-      - main
-  pull_request:  # İstəyə görə PR zamanı da build etmək üçün əlavə edə bilərsiniz
-    branches:
-      - main
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Install Rust
+      - name: Install Rust (stable + Windows target)
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-          profile: minimal  # Daha sürətli quraşdırma üçün
+          target: x86_64-pc-windows-msvc
           override: true
-          components: rustup, rustc, cargo  # Xüsusi komponentlər
+          profile: minimal
 
-      - name: Cache cargo dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~\.cargo\bin
-            ~\.cargo\registry
-            ~\.cargo\git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Windows Build Tools (Link.exe)
+        run: |
+          choco install -y visualstudio2022-workload-vctools
+          rustup default stable-x86_64-pc-windows-msvc
 
       - name: Build Release
-        run: cargo build --release --locked  # --locked Cargo.lock faylına əməl etmək üçün
+        run: cargo build --release --locked
+
+      - name: List Built Files (Debug)
+        run: dir /s target\release\*.exe
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3  # v3 istifadə edin
+        uses: actions/upload-artifact@v3
         with:
           name: rustdesk-exe
-          path: target/release/*.exe
-          if-no-files-found: error  # .exe tapılmasa xəta versin
-          retention-days: 5  # Artifact-ın saxlama müddəti
+          path: target\release\*.exe
+          if-no-files-found: error
+          retention-days: 3
