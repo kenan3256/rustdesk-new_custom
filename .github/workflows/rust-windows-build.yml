@@ -9,18 +9,27 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code with FULL submodules
+      - name: Checkout code with DEEP submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 0  # TAM tarixçə yüklə
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Tam tarixçə yüklə
 
-      - name: Force-Update Submodules
+      - name: Manually Clone Missing Submodules (Fix)
         run: |
-          git submodule deinit --all -f
+          # Köhnə submodul referanslarını sil
+          git config --file .gitmodules --name-only --get-regexp path | xargs -I{} git config --file .gitmodules --remove-section {}
+          git submodule deinit --all --force
+          
+          # hbb_common submodulunu manual clone et
+          git clone https://github.com/rustdesk/hbb_common libs/hbb_common
+          
+          # .gitmodules və .git/config fayllarını təmizlə
+          git submodule sync
           git submodule update --init --recursive --force
-          dir libs\hbb_common  # İçində fayl olub-olmadığını yoxla
+          
+          # Qovluqları yoxla
+          dir libs\hbb_common
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
