@@ -9,27 +9,14 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code with DEEP submodules
+      - name: Checkout code with submodules
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 0  # Tam tarixçə yüklə
+          fetch-depth: 0
 
-      - name: Manually Clone Missing Submodules (Fix)
-        run: |
-          # Köhnə submodul referanslarını sil
-          git config --file .gitmodules --name-only --get-regexp path | xargs -I{} git config --file .gitmodules --remove-section {}
-          git submodule deinit --all --force
-          
-          # hbb_common submodulunu manual clone et
-          git clone https://github.com/rustdesk/hbb_common libs/hbb_common
-          
-          # .gitmodules və .git/config fayllarını təmizlə
-          git submodule sync
-          git submodule update --init --recursive --force
-          
-          # Qovluqları yoxla
-          dir libs\hbb_common
+      - name: Update Cargo.lock (if needed)
+        run: cargo update  # Lock file-ı yenilə
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@master
@@ -43,7 +30,7 @@ jobs:
           rustup default stable-x86_64-pc-windows-msvc
 
       - name: Build Release
-        run: cargo build --release --locked
+        run: cargo build --release  # --locked SİLİNDİ
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
