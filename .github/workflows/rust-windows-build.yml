@@ -12,15 +12,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # @v4 istifadə edin
 
       - name: Install Rust (stable + Windows target)
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@master  # Yeni Rust toolchain
         with:
           toolchain: stable
           target: x86_64-pc-windows-msvc
-          override: true
-          profile: minimal
 
       - name: Install Windows Build Tools (Link.exe)
         run: |
@@ -34,7 +32,7 @@ jobs:
         run: dir /s target\release\*.exe
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # @v4 istifadə edin
         with:
           name: rustdesk-exe
           path: target\release\*.exe
