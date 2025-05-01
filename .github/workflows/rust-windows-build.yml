@@ -11,11 +11,13 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4  # @v4 istifadə edin
+      - name: Checkout code (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive  # Submodulları da clone edir!
 
       - name: Install Rust (stable + Windows target)
-        uses: dtolnay/rust-toolchain@master  # Yeni Rust toolchain
+        uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
           target: x86_64-pc-windows-msvc
@@ -32,7 +34,7 @@ jobs:
         run: dir /s target\release\*.exe
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4  # @v4 istifadə edin
+        uses: actions/upload-artifact@v4
         with:
           name: rustdesk-exe
           path: target\release\*.exe
