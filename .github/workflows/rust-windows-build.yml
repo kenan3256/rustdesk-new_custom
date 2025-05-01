@@ -1,0 +1,32 @@
+name: Build Rust Project for Windows
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on Windows
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: x86_64-pc-windows-msvc
+        override: true
+
+    - name: Build project
+      run: cargo build --release
+
+    - name: Upload built .exe
+      uses: actions/upload-artifact@v3
+      with:
+        name: rustdesk-exe
+        path: target/release/*.exe
